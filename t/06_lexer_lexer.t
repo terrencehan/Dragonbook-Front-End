@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 15;    # last test to print
+use Test::More tests => 18;    # last test to print
 use lib '../lib';
 
 use_ok 'Lexer::Lexer';
@@ -14,8 +14,10 @@ if
 else
 while
 do
-break
+break\n
 STR
+
+is Lexer::Lexer->line, 1;
 
 close STDIN;
 open STDIN, "<", \$str;
@@ -31,9 +33,13 @@ $word = $lexer->scan;
 is $word->tag,    Lexer::Tag->ID;
 is $word->lexeme, "id";
 
+is Lexer::Lexer->line, 2;
+
 $word = $lexer->scan;
 is $word->tag,    Lexer::Tag->IF;
 is $word->lexeme, "if";
+
+is Lexer::Lexer->line, 3;
 
 $word = $lexer->scan;
 is $word->tag,    Lexer::Tag->ELSE;
