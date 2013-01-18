@@ -1,4 +1,3 @@
-Changes
 lib/Front.pm
 lib/Inter/Expr.pm
 lib/Inter/Id.pm
@@ -13,11 +12,17 @@ lib/Symbols/Array.pm
 lib/Symbols/Env.pm
 lib/Symbols/Type.pm
 Makefile.PL
-MANIFEST
-README
-t/Front.t
-t/lexer_lexer.t
-t/lexer_num.t
-t/lexer_tag.t
-t/lexer_token.t
-t/lexer_word.t
+MANIFEST			This list of files
+README.md
+t/01_lexer_tag.t
+t/02_lexer_token.t
+t/03_lexer_num.t
+t/04_lexer_real.t
+t/05_lexer_word.t
+t/06_lexer_lexer.t
+t/07_symbols_type.t
+t/08_symbols_array.t
+t/09_symbols_env.t
+t/10_inter_node.t
+t/11_inter_expr.t
+t/12_inter_id.t

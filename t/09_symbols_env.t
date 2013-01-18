@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 5;    # last test to print
+use Test::More tests => 1;    # last test to print
 use lib '../lib';
 
 use_ok 'Symbols::Env';

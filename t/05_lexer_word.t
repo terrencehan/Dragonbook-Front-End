@@ -21,4 +21,4 @@ is Lexer::Word->False->lexeme, "false";
 my $w = Lexer::Word->new( lexeme => "identifier", tag => Lexer::Tag->ID );
 
 is $w->to_string, "identifier";
-#is $w->tag,       Lexer::Tag->ID;
+is $w->tag,       Lexer::Tag->ID;
