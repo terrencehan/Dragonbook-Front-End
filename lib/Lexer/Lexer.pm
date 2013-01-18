@@ -62,20 +62,19 @@ class Lexer::Lexer {
             $self->peek(' ');
             return 1;
         }
-        else {  #TODO add exception handler
-            $self->peek('') ;
+        else {       #TODO add exception handler
             my $c = getc;
-            if($c){
-                $self->peek($c) ;
+            if ($c) {
+                $self->peek($c);
             }
-            else{
-                return 0;
+            else {
+                #occure EOF
             }
         }
     }
 
-    method scan { #TODO add exception handler
-        while ( $self->_readch() ) {
+    method scan {       #TODO add exception handler
+        for ( ; ; $self->_readch() ) {
             if ( $self->peek eq ' ' or $self->peek eq "\t" ) { next; }
             elsif ( $self->peek eq "\n" ) {
                 Lexer::Lexer->line( Lexer::Lexer->line + 1 );
