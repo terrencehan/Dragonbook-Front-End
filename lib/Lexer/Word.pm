@@ -13,7 +13,7 @@ class Lexer::Word extends Lexer::Token {
         isa => 'Str',
     );
 
-    method to_string { return $self->lexeme . ""; }
+    method to_string { $self->lexeme; }
 
     my %hash = (
 

@@ -16,7 +16,7 @@ class Lexer::Real extends Lexer::Token {
     }
 
     method to_string {
-        return $self->value . "";
+        $self->value . "";
     }
 
 }
