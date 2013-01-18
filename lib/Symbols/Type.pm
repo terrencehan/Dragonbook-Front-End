@@ -12,18 +12,31 @@ class Symbols::Type extends Lexer::Word {
         default => 0,
     );
 
-    for (qw(Int Float Char Bool)) {
+    my %hash = (
+
+        #type=>width
+        Int   => 4,
+        Float => 8,
+        Char  => 1,
+        Bool  => 1,
+    );
+
+    for ( keys %hash ) {
         class_has $_ => (
             is      => 'rw',
             isa     => 'Symbols::Type',
             default => sub {
-                Symbols::Type->new( lexeme => ( lc $_ ), Lexer::Tag->BASIC, 4 );
+                Symbols::Type->new(
+                    lexeme => ( lc $_ ),
+                    tag    => Lexer::Tag->BASIC,
+                    width  => $hash{$_}
+                );
             },
         );
     }
 
     sub numeric {    #class method
-        my $p = shift;
+        my ( $class, $p ) = @_;
         return 1
           if ( $p == Symbols::Type->Char
             or $p == Symbols::Type->Int
@@ -32,8 +45,10 @@ class Symbols::Type extends Lexer::Word {
     }
 
     sub max {        #class method
-        my ( $p1, $p2 ) = @_;
-        if ( not numeric($p1) or not numeric($p2) ) {
+        my ( $class, $p1, $p2 ) = @_;
+        if (   not Symbols::Type->numeric($p1)
+            or not Symbols::Type->numeric($p2) )
+        {
             return undef;
         }
         elsif ( $p1 == Symbols::Type->Float or $p2 == Symbols::Type->Float ) {

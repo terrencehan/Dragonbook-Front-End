@@ -9,6 +9,7 @@ class Lexer::Lexer {
     use Lexer::Num;
     use Lexer::Real;
     use Lexer::Tag;
+    use Symbols::Type;
     use MooseX::ClassAttribute;
 
     class_has 'line' => (
@@ -45,8 +46,8 @@ class Lexer::Lexer {
             Lexer::Word->new( lexeme => "break", tag => Lexer::Tag->BREAK ) );
 
         for (
-            Lexer::Word->True, Lexer::Word->False, Lexer::Word->Int,
-            Lexer::Word->Bool, Lexer::Word->Char,  Lexer::Word->Float
+            Lexer::Word->True,   Lexer::Word->False,  Symbols::Type->Int,
+            Symbols::Type->Bool, Symbols::Type->Char, Symbols::Type->Float
           )
         {
             $self->_reserve($_);
@@ -61,12 +62,19 @@ class Lexer::Lexer {
             $self->peek(' ');
             return 1;
         }
-        else {
-            $self->peek(getc);
+        else {  #TODO add exception handler
+            $self->peek('') ;
+            my $c = getc;
+            if($c){
+                $self->peek($c) ;
+            }
+            else{
+                return 0;
+            }
         }
     }
 
-    method scan {
+    method scan { #TODO add exception handler
         while ( $self->_readch() ) {
             if ( $self->peek eq ' ' or $self->peek eq "\t" ) { next; }
             elsif ( $self->peek eq "\n" ) {

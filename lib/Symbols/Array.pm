@@ -3,7 +3,7 @@ class Symbols::Array extends Symbols::Type {
     use lib '../';
     use Symbols::Type;
 
-    #--BUILD (of => Num, size => Num)
+    #--BUILD (of => Symbols::Type, size => Num)
 
     has 'of' => (
         is  => 'rw',
@@ -19,7 +19,7 @@ class Symbols::Array extends Symbols::Type {
     method BUILD ($args) {
         $self->lexeme('[]');
         $self->tag( Lexer::Tag->INDEX );
-        $self->width( $args->{size} * $args->{of} );
+        $self->width( $args->{size} * $args->{of}->width );
     }
 
     method to_string {
