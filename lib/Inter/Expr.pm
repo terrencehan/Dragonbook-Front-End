@@ -6,7 +6,7 @@ class Inter::Expr extends Inter::Node {
     use Lexer::Token;
     use Symbols::Type;
 
-    has 'op' => (
+    has 'op' => (    #oprator
         is  => 'rw',
         isa => 'Lexer::Token',
     );
@@ -16,8 +16,21 @@ class Inter::Expr extends Inter::Node {
         isa => 'Symbols::Type',
     );
 
-    method gen    { return $self; }
-    method reduce { return $self; }
+    method gen {
+
+      #return a 'term' that can fit the right side of a tree-address instruction
+        $self;
+    }
+
+    method reduce {
+
+        #compute or "reduce" an expression down to a single address
+        $self;
+    }
+
+    method jumping (Num $t, Num $f) {
+        $self->emitjumps( $self->to_string, $t, $f );
+    }
 
     method emitjumps (Str $test, Num $t, Num $f) {
         if ( $t != 0 && $f != 0 ) {
@@ -33,7 +46,7 @@ class Inter::Expr extends Inter::Node {
         }
     }
 
-    method to_string { return $self->op->to_string; }
+    method to_string { $self->op->to_string; }
 }
 
 1;

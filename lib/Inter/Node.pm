@@ -1,7 +1,7 @@
 use MooseX::Declare;
 class Inter::Node {
 
-    #BUILD {lexline=> Num, labels=> Num}
+    #-- BUILD ()
     use lib '../';
     use 5.010;
     use Moose;
@@ -9,7 +9,7 @@ class Inter::Node {
     use Lexer::Lexer;
 
     has 'lexline' => (
-        is      => 'rw',
+        is      => 'ro',
         isa     => 'Num',
         default => sub { Lexer::Lexer->line },
     );
@@ -20,7 +20,7 @@ class Inter::Node {
         default => 0,
     );
 
-    method newlebel {
+    method newlabel {
         return Inter::Node->labels( Inter::Node->labels + 1 );
     }
 

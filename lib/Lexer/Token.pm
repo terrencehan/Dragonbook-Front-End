@@ -9,7 +9,7 @@ class Lexer::Token {
     );
 
     method to_string {
-        $self->tag . "";
+        chr $self->tag;
     }
 
 }
