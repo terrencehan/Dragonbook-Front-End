@@ -28,7 +28,11 @@ class Inter::Expr extends Inter::Node {
         $self;
     }
 
-    method jumping (Num $t, Num $f) {
+    method jumping (Num $t, Num $f) { 
+        #true and false, label number (i.e. 'L1').
+        #By convention, the special label 0 means that
+        #control falls through B to the next instruction
+        #after the code for B.
         $self->emitjumps( $self->to_string, $t, $f );
     }
 
