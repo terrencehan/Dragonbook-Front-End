@@ -12,4 +12,4 @@ use Lexer::Tag;
 my $token = Lexer::Token->new( tag => Lexer::Tag->AND );
 
 is $token->tag,       Lexer::Tag->AND;
-is $token->to_string, "" . Lexer::Tag->AND;
+is $token->to_string, chr Lexer::Tag->AND;

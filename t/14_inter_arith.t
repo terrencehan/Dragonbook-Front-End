@@ -2,8 +2,7 @@
 use strict;
 use warnings;
 
-#use Test::More tests => 5;
-use Test::More 'no_plan';
+use Test::More tests => 3;
 use lib '../lib';
 
 use_ok 'Inter::Arith';

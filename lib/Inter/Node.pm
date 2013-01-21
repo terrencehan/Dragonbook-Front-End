@@ -4,7 +4,6 @@ class Inter::Node {
     #-- BUILD ()
     use lib '../';
     use 5.010;
-    use Moose;
     use MooseX::ClassAttribute;
     use Lexer::Lexer;
 
