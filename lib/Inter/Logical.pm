@@ -28,7 +28,7 @@ class Inter::Logical extends Inter::Expr {
         }
     }
 
-    method gen {
+    method gen { #error? i think this should be 'reduce' according to the dragonbook
         my ( $f, $a ) =
           ( $self->newlabel, $self->newlabel );    #false, after => Num
         my $temp = Inter::Temp->new( type => $self->type );
