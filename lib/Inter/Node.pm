@@ -24,7 +24,7 @@ class Inter::Node {
     }
 
     method error (Str $s) {
-        die 'near line' . $self->lexline . ': ' . $s;
+        die 'near line ' . $self->lexline . ': ' . $s;
     }
 
     method emitlabel (Num $i) { print "L" . $i . ":"; }
