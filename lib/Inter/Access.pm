@@ -34,7 +34,7 @@ class Inter::Access extends Inter::Op {
     }
 
     method to_string {
-        $self->array->to_string . " [" . $self->index->to_string . " ]";
+        $self->array->to_string . "[ " . $self->index->to_string . " ]";
     }
 
 }
