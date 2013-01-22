@@ -8,7 +8,7 @@ class Inter::Op extends Inter::Expr {
 
     method reduce {
         my $x = $self->gen;
-        my $t = Inter::Temp->new;
+        my $t = Inter::Temp->new( type => $self->type );
         $self->emit( $t->to_string . " = " . $x->to_string );
         $t;
     }
