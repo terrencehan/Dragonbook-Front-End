@@ -2,14 +2,14 @@
 use strict;
 use warnings;
 
-use Test::More tests => 3;
+use Test::More tests => 5;
 use lib '../lib';
 
 use_ok 'Inter::Arith';
 use Inter::Expr;
 
 my $arith = Inter::Arith->new(
-    op    => Lexer::Word->and,
+    op    => Lexer::Token->new(tag=> ord "+"),
     expr1 => Inter::Expr->new(
         op   => Lexer::Num->new( value => 10 ),
         type => Symbols::Type->Int
@@ -22,4 +22,12 @@ my $arith = Inter::Arith->new(
 
 isa_ok $arith, 'Inter::Arith';
 
-is $arith->to_string, "10 && 11";
+is $arith->to_string, "10 + 11";
+
+my $str = "";
+close STDOUT;
+open STDOUT, ">", \$str;
+
+my $t = $arith->reduce;
+is $str, "\tt1 = 10 + 11\n";
+is $t->type, Symbols::Type->Int;
