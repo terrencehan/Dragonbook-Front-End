@@ -137,8 +137,8 @@ class Lexer::Lexer {
             $self->words->{$b} = Lexer::Tag->ID;
             return $w;
         }
-        my $tok = Lexer::Token->new( tag => oct $self->peek );
-        $self->peek = (' ');
+        my $tok = Lexer::Token->new( tag => (ord $self->peek) );
+        $self->peek(' ');
         return $tok;
     }
 

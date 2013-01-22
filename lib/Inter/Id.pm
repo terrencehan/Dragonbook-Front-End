@@ -9,7 +9,7 @@ class Inter::Id extends Inter::Expr {
 
     has 'offset' => (    #relative address
         is  => 'rw',
-        isa => 'Inter::Id',
+        isa => 'Num',
     );
 }
 

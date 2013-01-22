@@ -11,7 +11,7 @@ class Inter::Logical extends Inter::Expr {
     );
 
     method BUILD {
-        my $t = Inter::Logical->check( $self->expr1->type, $self->expr2->type );
+        my $t = ref($self)->check( $self->expr1->type, $self->expr2->type );
         if ( not defined $t ) {
             $self->error("type error");
         }
