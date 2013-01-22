@@ -9,7 +9,7 @@ use_ok 'Inter::Not';
 use Inter::Constant;
 
 my $not = Inter::Not->new(
-    op    => Lexer::Word->and, #bug where is not?
+    op    => Lexer::Token->new(tag => ord '!'), 
     expr1 => Inter::Constant->True, 
     expr2 => Inter::Constant->True,
 );
@@ -30,7 +30,7 @@ END
 
 
 $not = Inter::Not->new(
-    op    => Lexer::Word->and, #bug, as above
+    op    => Lexer::Token->new(tag => ord '!'), 
     expr1 => Inter::Constant->False,
     expr2 => Inter::Constant->False, 
 );

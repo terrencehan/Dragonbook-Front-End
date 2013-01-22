@@ -41,7 +41,7 @@ class Inter::Expr extends Inter::Node {
             $self->emit( 'if ' . $test . " goto L" . $t );
             $self->emit( 'goto L' . $f );
         }
-        elsif ( $t != 0 ) { $self->emit( 'if ' . $test + ' goto L' . $t ); }
+        elsif ( $t != 0 ) { $self->emit( 'if ' . $test . ' goto L' . $t ); }
         elsif ( $f != 0 ) {
             $self->emit( 'iffalse ' . $test . ' goto L' . $f );
         }
