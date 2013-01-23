@@ -3,7 +3,7 @@ class Symbols::Array extends Symbols::Type {
     use lib '../';
     use Symbols::Type;
 
-    #--BUILD (of => Symbols::Type, size => Num)
+    #--BUILD (size => Num, of => Symbols::Type)
 
     has 'of' => (
         is  => 'rw',
