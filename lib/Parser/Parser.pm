@@ -12,6 +12,8 @@ class Parser::Parser {
     use Symbols::Env;
     use Inter::Id;
     use Inter::Stmt;
+    use Inter::Arith;
+    use Inter::Unary;
     use Inter::Set;
     use Inter::SetElem;
     use Inter::Or;
@@ -19,6 +21,7 @@ class Parser::Parser {
     has 'lex' => (
         is  => 'rw',
         isa => 'Lexer::Lexer',
+        default=>sub{Lexer::Lexer->new;}
     );
 
     has 'look' => (    #lookahead tagen
@@ -38,6 +41,10 @@ class Parser::Parser {
     );
 
     method BUILD {
+        #$self->move();
+    }
+
+    method run {
         $self->move();
     }
 
@@ -253,18 +260,144 @@ class Parser::Parser {
 
     method rel {
         my $x = $self->expr();    # Inter::Expr
-        given($self->look->tag){
-            when([ord('<'), Lexer::Tag->LE, ord('>')]){
-            my $tok = $self->look;
-            $self->move();
-            $x =
-              Inter::Rel->new( op => $tok, expr1 => $x, expr2 => $self->rel() );
+        given ( $self->look->tag ) {
+            when ( [ ord('<'), Lexer::Tag->LE, ord('>') ] ) {
+                my $tok = $self->look;
+                $self->move();
+                $x = Inter::Rel->new(
+                    op    => $tok,
+                    expr1 => $x,
+                    expr2 => $self->rel()
+                );
 
             }
-            else{
+            default {
                 $x;
             }
         }
+    }
+
+    method expr {
+        my $x = $self->term();    # Inter::Expr
+        while ( $self->look->tag == ord('+') or $self->look->tag == ord('-') ) {
+            my $tok = $self->look;
+            $self->move();
+            $x = Inter::Arith->new(
+                op    => $tok,
+                expr1 => $x,
+                expr2 => $self->term()
+            );
+
+        }
+        $x;
+
+    }
+
+    method term {
+        my $x = $self->unary();    # Inter::Expr
+        while ( $self->look->tag == ord('*') or $self->look->tag == ord('/') ) {
+            my $tok = $self->look;
+            $self->move();
+            $x = Inter::Arith->new(
+                op    => $tok,
+                expr1 => $x,
+                expr2 => $self->unary()
+            );
+
+        }
+        $x;
+
+    }
+
+    method unary {
+        if ( $self->look->tag == ord('-') ) {
+            $self->move();
+            Inter::Unary->new(
+                op   => Lexer::Word->minux,
+                expr => $self->unary()
+            );
+        }
+        elsif ( $self->look->tag == ord('!') ) {
+            my $tok = $self->look;
+            $self->move();
+            Inter::Not->new( op => $tok, expr => $self->unary() );
+        }
+        else {
+            $self->factor();
+        }
+    }
+
+    method factor {
+        my $x;      #Inter::Expr
+        given ( $self->look->tag ) {
+            when ( ord('(') ) {
+                $self->move();
+                $x = $self->bool();
+                $self->match(')');
+                $x;
+            }
+            when ( Lexer::Tag->NUM ) {
+                $x =
+                  Inter::Constant->new( op => $self->look, Symbols::Type->Int );
+                $self->move();
+                $x;
+            }
+            when ( Lexer::Tag->REAL ) {
+                $x = Inter::Constant->new(
+                    op => $self->look,
+                    Symbols::Type->Float
+                );
+                $self->move();
+                $x;
+            }
+            when ( Lexer::Tag->TRUE ) {
+                $x = Inter::Constant->True;
+                $self->move();
+                $x;
+            }
+            when ( Lexer::Tag->FALSE ) {
+                $x = Inter::Constant->False;
+                $self->move();
+                $x;
+            }
+            when ( Lexer::Tag->ID ) {
+                my $s  = $self->look->to_string;
+                my $id = $self->top->get( $self->look );
+                $self->error( $self->look->to_string . " undeclared" )
+                  if ( not defined $id );
+                $self->move();
+                if($self->look->tag != ord('[')){
+                    return $id;
+                }
+                else{
+                    $self->offset($id);
+                }
+            }
+        }
+    }
+
+    method offset(Inter::Id $a){ # I -> [E] | [E] I
+        my ($i, $w, $t1, $t2, $loc); #Inter::Expr    inherit id
+        my $type = $a->type;
+        $self->match('['); #first index, I -> [E]
+        $i = $self->bool();
+        $self->match(']');
+
+        $type=$type->of;
+        $w = Inter::Constant->new(int => $type->width);
+        $t1 = Inter::Arith->new(op=>Lexer::Token(ord('*')), expr1=>$i, expr2=>$w);
+        $loc = $t1;
+        while($self->look->tag == ord('[')){ #muti-dimensional I -> [E] I
+            $self->match('[');
+            $i = $self->bool();
+            $self->match(']');
+            $type = $type->of;
+            $w = Inter::Constant->new(int => $type->width);
+            $t1 = Inter::Arith->new(op=>Lexer::Token(ord('*')), expr1=>$i, expr2=>$w);
+            $t2 = Inter::Arith->new(op=>Lexer::Token(ord('+')), expr1=>$loc, expr2=>$t1);
+            $loc = $t2;
+        }
+        Inter::Access->new(array=>$a, index=>$loc, type=>$type);
     }
 
 }
