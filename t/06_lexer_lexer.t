@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 20;    # last test to print
+use Test::More tests => 22;    # last test to print
 use lib '../lib';
 
 use_ok 'Lexer::Lexer';
@@ -16,6 +16,7 @@ while
 do
 break\n
 +
+=
 STR
 
 is Lexer::Lexer->line, 1;
@@ -61,3 +62,7 @@ is $word->lexeme, "break";
 $word = $lexer->scan;
 is $word->tag,    43;
 is $word->to_string, "+";
+
+$word = $lexer->scan;
+is $word->tag,    61;
+is $word->to_string, "=";

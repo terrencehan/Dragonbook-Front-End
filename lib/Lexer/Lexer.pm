@@ -84,27 +84,27 @@ class Lexer::Lexer {
         given ( $self->peek ) {
             when ('&') {
                 if ( $self->_readch('&') ) { return Lexer::Word->and; }
-                else { return Lexer::Token->new( tag => oct '&' ); }
+                else { return Lexer::Token->new( tag => ord '&' ); }
             }
             when ('|') {
                 if ( $self->_readch('|') ) { return Lexer::Word->or; }
-                else { return Lexer::Token->new( tag => oct '|' ); }
+                else { return Lexer::Token->new( tag => ord '|' ); }
             }
             when ('=') {
                 if ( $self->_readch('=') ) { return Lexer::Word->eq; }
-                else { return Lexer::Token->new( tag => oct '=' ); }
+                else { return Lexer::Token->new( tag => ord '=' ); }
             }
             when ('!') {
                 if ( $self->_readch('=') ) { return Lexer::Word->ne; }
-                else { return Lexer::Token->new( tag => oct '!' ); }
+                else { return Lexer::Token->new( tag => ord '!' ); }
             }
             when ('<') {
                 if ( $self->_readch('=') ) { return Lexer::Word->le; }
-                else { return Lexer::Token->new( tag => oct '<' ); }
+                else { return Lexer::Token->new( tag => ord '<' ); }
             }
             when ('>') {
                 if ( $self->_readch('=') ) { return Lexer::Word->ge; }
-                else { return Lexer::Token->new( tag => oct '>' ); }
+                else { return Lexer::Token->new( tag => ord '>' ); }
             }
         }    #end of given
 
@@ -134,7 +134,7 @@ class Lexer::Lexer {
             my $w = $self->words->{$b};
             if ($w) { return $w; }
             $w = Lexer::Word->new( lexeme => $b, tag => Lexer::Tag->ID );
-            $self->words->{$b} = Lexer::Tag->ID;
+            $self->words->{$b} = $w;
             return $w;
         }
         my $tok = Lexer::Token->new( tag => (ord $self->peek) );
