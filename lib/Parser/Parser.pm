@@ -30,8 +30,9 @@ class Parser::Parser {
     );
 
     has 'top' => (     #current or top symbol table
-        is  => 'rw',
-        isa => 'Symbols::Env',
+        is      => 'rw',
+        isa     => 'Symbols::Env',
+        default => sub { Symbols::Env->new; }
     );
 
     has 'used' => (    #storage used for declarations
@@ -49,7 +50,8 @@ class Parser::Parser {
     }
 
     method move {
-        $self->look( $self->lex->scan );
+        my $look = $self->lex->scan;
+        $self->look($look);
     }
 
     method error (Str $s) {
@@ -58,15 +60,16 @@ class Parser::Parser {
 
     method match (Num|Str $t) {
         match_on_type $t => (
-            Num => sub{ }, 
+            Num => sub { },
             Str => sub {
                 $t = ord $t;
-            },  
+            },
         );
         if ( $self->look->tag == $t ) {
             $self->move();
         }
         else {
+            die "fuck \$t = $t";
             $self->error("syntax error");
         }
     }
@@ -82,10 +85,10 @@ class Parser::Parser {
 
     method block {                      #block -> { decls stmts }
         $self->match('{');
-        my $savedEnv = $self->top;    #Symbol::Env
-        $self->top( Symbol::Env->new( $self->top ) );
-        $self->decls;
-        my $s = $self->stmts;         #Inter::Stmt
+        my $savedEnv = $self->top;    #Symbols::Env
+        $self->top( Symbols::Env->new( prev => $self->top ) );
+        $self->decls();
+        my $s = $self->stmts();       #Inter::Stmt
         $self->match('}');
         $self->top($savedEnv);
         $s;
@@ -140,7 +143,8 @@ class Parser::Parser {
                 $self->move();
                 Inter::Stmt->Null;
             }
-            when ( Lexer::Tag->IF ) {
+            when ( Lexer::Tag->IF . "" ) {
+                die Lexer::Tag->IF . "==fuck in 1211==" . $self->look->tag;
                 $self->match( Lexer::Tag->IF );
                 $self->match('(');
                 $x = $self->bool();
@@ -156,7 +160,7 @@ class Parser::Parser {
                     Inter::If->new( expr => $x, stmt1 => $s1, stmt2 => $s2 );
                 }
             }
-            when ( Lexer::Tag->WHILE ) {
+            when ( Lexer::Tag->WHILE . "" ) {
                 my $whilenode = Inter::While->new;
                 $savedStmt = Inter::Stmt->Enclosing;
                 Inter::Stmt->Enclosing($whilenode);
@@ -171,7 +175,7 @@ class Parser::Parser {
                 Inter::Stmt->Enclosing($savedStmt);
                 $whilenode;
             }
-            when ( Lexer::Tag->DO ) {
+            when ( Lexer::Tag->DO . "" ) {
                 my $donode = Inter::Do->new;
                 $savedStmt = Inter::Stmt->Enclosing;
                 Inter::Stmt->Enclosing($donode);
@@ -188,7 +192,7 @@ class Parser::Parser {
                 $donode;
 
             }
-            when ( Lexer::Tag->BREAK ) {
+            when ( Lexer::Tag->BREAK . "" ) {
                 $self->match( Lexer::Tag->BREAK );
                 $self->match(';');
                 Inter::Break->new;
@@ -399,12 +403,12 @@ class Parser::Parser {
             $type = $type->of;
             $w    = Inter::Constant->new( int => $type->width );
             $t1   = Inter::Arith->new(
-                op    => Lexer::Token( ord('*') ),
+                op    => Lexer::Token->new( ord('*') ),
                 expr1 => $i,
                 expr2 => $w
             );
             $t2 = Inter::Arith->new(
-                op    => Lexer::Token( ord('+') ),
+                op    => Lexer::Token->new( ord('+') ),
                 expr1 => $loc,
                 expr2 => $t1
             );
