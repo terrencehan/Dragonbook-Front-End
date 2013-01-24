@@ -19,9 +19,9 @@ class Parser::Parser {
     use Inter::Or;
 
     has 'lex' => (
-        is  => 'rw',
-        isa => 'Lexer::Lexer',
-        default=>sub{Lexer::Lexer->new;}
+        is      => 'rw',
+        isa     => 'Lexer::Lexer',
+        default => sub { Lexer::Lexer->new; }
     );
 
     has 'look' => (    #lookahead tagen
@@ -41,7 +41,7 @@ class Parser::Parser {
     );
 
     method BUILD {
-        #$self->move();
+                       #$self->move();
     }
 
     method run {
@@ -53,14 +53,15 @@ class Parser::Parser {
     }
 
     method error (Str $s) {
-        die 'near line' . $self->lex->line . ": " . $s;
+        die 'near line ' . $self->lex->line . ": " . $s;
     }
 
     method match (Num|Str $t) {
         match_on_type $t => (
+            Num => sub{ }, 
             Str => sub {
                 $t = ord $t;
-            }
+            },  
         );
         if ( $self->look->tag == $t ) {
             $self->move();
@@ -366,38 +367,50 @@ class Parser::Parser {
                 $self->error( $self->look->to_string . " undeclared" )
                   if ( not defined $id );
                 $self->move();
-                if($self->look->tag != ord('[')){
+                if ( $self->look->tag != ord('[') ) {
                     return $id;
                 }
-                else{
+                else {
                     $self->offset($id);
                 }
             }
         }
     }
 
-    method offset(Inter::Id $a){ # I -> [E] | [E] I
-        my ($i, $w, $t1, $t2, $loc); #Inter::Expr    inherit id
+    method offset (Inter::Id $a) {    # I -> [E] | [E] I
+        my ( $i, $w, $t1, $t2, $loc );    #Inter::Expr    inherit id
         my $type = $a->type;
-        $self->match('['); #first index, I -> [E]
+        $self->match('[');                #first index, I -> [E]
         $i = $self->bool();
         $self->match(']');
 
-        $type=$type->of;
-        $w = Inter::Constant->new(int => $type->width);
-        $t1 = Inter::Arith->new(op=>Lexer::Token(ord('*')), expr1=>$i, expr2=>$w);
+        $type = $type->of;
+        $w    = Inter::Constant->new( int => $type->width );
+        $t1   = Inter::Arith->new(
+            op    => Lexer::Token( ord('*') ),
+            expr1 => $i,
+            expr2 => $w
+        );
         $loc = $t1;
-        while($self->look->tag == ord('[')){ #muti-dimensional I -> [E] I
+        while ( $self->look->tag == ord('[') ) {    #muti-dimensional I -> [E] I
             $self->match('[');
             $i = $self->bool();
             $self->match(']');
             $type = $type->of;
-            $w = Inter::Constant->new(int => $type->width);
-            $t1 = Inter::Arith->new(op=>Lexer::Token(ord('*')), expr1=>$i, expr2=>$w);
-            $t2 = Inter::Arith->new(op=>Lexer::Token(ord('+')), expr1=>$loc, expr2=>$t1);
+            $w    = Inter::Constant->new( int => $type->width );
+            $t1   = Inter::Arith->new(
+                op    => Lexer::Token( ord('*') ),
+                expr1 => $i,
+                expr2 => $w
+            );
+            $t2 = Inter::Arith->new(
+                op    => Lexer::Token( ord('+') ),
+                expr1 => $loc,
+                expr2 => $t1
+            );
             $loc = $t2;
         }
-        Inter::Access->new(array=>$a, index=>$loc, type=>$type);
+        Inter::Access->new( array => $a, index => $loc, type => $type );
     }
 
 }
