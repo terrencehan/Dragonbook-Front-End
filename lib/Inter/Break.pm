@@ -4,7 +4,7 @@ class Inter::Break extends Inter::Stmt {
     #-- BUILD ()
     use lib '../';
 
-    has 'stmt1' => (
+    has 'stmt' => (
         is  => 'rw',
         isa => 'Inter::Stmt',
     );

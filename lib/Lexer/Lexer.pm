@@ -64,11 +64,12 @@ class Lexer::Lexer {
         }
         else {       #TODO add exception handler
             my $c = getc;
-            if ($c) {
+            if (defined $c) {
                 $self->peek($c);
             }
             else {
                 #occure EOF
+                $self->peek(chr -1);
             }
         }
     }
@@ -119,7 +120,7 @@ class Lexer::Lexer {
             my ( $x, $d ) = ( $v, 10 );
             while (1) {
                 $self->_readch();
-                if ( $self->peek !~ [ 0 - 9 ] ) { last }
+                if ( $self->peek !~ /[0-9]/ ) { last }
                 $x = $x + $self->peek / $d;
                 $d *= 10;
             }

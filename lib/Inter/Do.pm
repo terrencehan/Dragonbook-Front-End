@@ -16,7 +16,7 @@ class Inter::Do extends Inter::Stmt {
         isa => 'Inter::Stmt',
     );
 
-    method init (Inter::Expr $x, Inter::Stmt $s) {
+    method init (Inter::Stmt $s, Inter::Expr $x) {
         $self->expr($x);
         $self->stmt($s);
         $self->expr->error("boolen required in if")
@@ -26,7 +26,7 @@ class Inter::Do extends Inter::Stmt {
     method gen (Num $b, Num $a) {
         $self->after($a);    #save label $a
         my $label = $self->newlabel;    # label for expr
-        $self->stmt->gen( $b, $label );    # $b for next loop
+        $self->stmt->gen( $b, $label ); # $b for next loop
         $self->emitlabel($label);
         $self->expr->jumping( $b, 0 );
     }

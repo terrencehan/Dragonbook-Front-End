@@ -9,7 +9,6 @@ class Inter::Seq extends Inter::Stmt {
         isa => 'Inter::Stmt',
     );
 
-
     method gen (Num $b, Num $a) {
         if($self->stmt1 == Inter::Stmt->Null){
             $self->stmt2->gen($b, $a);

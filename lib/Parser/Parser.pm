@@ -11,8 +11,16 @@ class Parser::Parser {
     use Symbols::Type;
     use Symbols::Env;
     use Inter::Id;
+    use Inter::Break;
+    use Inter::Access;
     use Inter::Stmt;
     use Inter::Arith;
+    use Inter::While;
+    use Inter::Do;
+    use Inter::Seq;
+    use Inter::Rel;
+    use Inter::If;
+    use Inter::Constant;
     use Inter::Unary;
     use Inter::Set;
     use Inter::SetElem;
@@ -51,7 +59,11 @@ class Parser::Parser {
 
     method move {
         my $look = $self->lex->scan;
-        $self->look($look);
+        if ($look) {
+            $self->look($look);
+        }
+        else {
+        }
     }
 
     method error (Str $s) {
@@ -69,7 +81,6 @@ class Parser::Parser {
             $self->move();
         }
         else {
-            die "fuck \$t = $t";
             $self->error("syntax error");
         }
     }
@@ -100,7 +111,8 @@ class Parser::Parser {
             my $tok = $self->look;
             $self->match( Lexer::Tag->ID );
             $self->match(';');
-            my $id = Inter::Id( op => $tok, type => $p, offset => $self->used );
+            my $id =
+              Inter::Id->new( op => $tok, type => $p, offset => $self->used );
             $self->top->put( $tok, $id );
             $self->used( $self->used + $p->width );
         }
@@ -108,7 +120,7 @@ class Parser::Parser {
 
     method type {
         my $p = $self
-          ->look;    #Symbols::Type expect $self->look->tag == Inter::Tag->BASIC
+          ->look;    #Symbols::Type expect $self->look->tag == Lexer::Tag->BASIC
         $self->match( Lexer::Tag->BASIC );
         if ( $self->look->tag != ord('[') ) { return $p; }    #T -> basic
         else { return $self->dims($p); }                      #return array
@@ -122,7 +134,7 @@ class Parser::Parser {
         if ( $self->look->tag == ord('[') ) {
             $p = $self->dims($p);
         }
-        Symbols::Array->new( size => $tok->value, type => $p );
+        Symbols::Array->new( size => $tok->value, of => $p );
     }
 
     method stmts {
@@ -130,7 +142,7 @@ class Parser::Parser {
             Inter::Stmt->Null;
         }
         else {
-            Inter::Seq->new( $self->stmt(), $self->stmts() );
+            Inter::Seq->new( stmt1 => $self->stmt(), stmt2 => $self->stmts() );
         }
     }
 
@@ -144,7 +156,6 @@ class Parser::Parser {
                 Inter::Stmt->Null;
             }
             when ( Lexer::Tag->IF . "" ) {
-                die Lexer::Tag->IF . "==fuck in 1211==" . $self->look->tag;
                 $self->match( Lexer::Tag->IF );
                 $self->match('(');
                 $x = $self->bool();
@@ -173,7 +184,7 @@ class Parser::Parser {
                 $s1 = $self->stmt();
                 $whilenode->init( $x, $s1 );
                 Inter::Stmt->Enclosing($savedStmt);
-                $whilenode;
+                return $whilenode; #TODO why we must return $whilenode explicitly
             }
             when ( Lexer::Tag->DO . "" ) {
                 my $donode = Inter::Do->new;
@@ -189,13 +200,13 @@ class Parser::Parser {
 
                 $donode->init( $s1, $x );
                 Inter::Stmt->Enclosing($savedStmt);
-                $donode;
+                return $donode;
 
             }
             when ( Lexer::Tag->BREAK . "" ) {
                 $self->match( Lexer::Tag->BREAK );
                 $self->match(';');
-                Inter::Break->new;
+                return Inter::Break->new;
             }
             when ( ord '{' ) {
                 $self->block();
@@ -214,7 +225,7 @@ class Parser::Parser {
         $self->error( $t->to_string . " undeclared" ) if not defined $id;
         if ( $self->look->tag == ord('=') ) {    # S -> id = E
             $self->move();
-            $stmt = Inter::Set->new( id => $id, expr => $self->() );
+            $stmt = Inter::Set->new( id => $id, expr => $self->bool() );
         }
         else {
             my $x = $self->offset($id);          #Inter::Access
@@ -227,7 +238,7 @@ class Parser::Parser {
 
     method bool {
         my $x = $self->join();                   # Inter::Expr
-        while ( $self->look->tag == Inter::Tag->OR ) {
+        while ( $self->look->tag == Lexer::Tag->OR ) {
             my $tok = $self->look;
             $self->move();
             $x =
@@ -238,7 +249,7 @@ class Parser::Parser {
 
     method join {
         my $x = $self->equality();               # Inter::Expr
-        while ( $self->look->tag == Inter::Tag->AND ) {
+        while ( $self->look->tag == Lexer::Tag->AND ) {
             my $tok = $self->look;
             $self->move();
             $x = Inter::And->new(
@@ -266,7 +277,7 @@ class Parser::Parser {
     method rel {
         my $x = $self->expr();    # Inter::Expr
         given ( $self->look->tag ) {
-            when ( [ ord('<'), Lexer::Tag->LE, ord('>') ] ) {
+            when ( [ ord('<'), Lexer::Tag->LE, Lexer::Tag->GE, ord('>') ] ) {
                 my $tok = $self->look;
                 $self->move();
                 $x = Inter::Rel->new(
@@ -341,31 +352,33 @@ class Parser::Parser {
                 $self->match(')');
                 $x;
             }
-            when ( Lexer::Tag->NUM ) {
-                $x =
-                  Inter::Constant->new( op => $self->look, Symbols::Type->Int );
-                $self->move();
-                $x;
-            }
-            when ( Lexer::Tag->REAL ) {
+            when ( Lexer::Tag->NUM . "" ) {
                 $x = Inter::Constant->new(
-                    op => $self->look,
-                    Symbols::Type->Float
+                    op   => $self->look,
+                    type => Symbols::Type->Int
                 );
                 $self->move();
                 $x;
             }
-            when ( Lexer::Tag->TRUE ) {
+            when ( Lexer::Tag->REAL . "" ) {
+                $x = Inter::Constant->new(
+                    op   => $self->look,
+                    type => Symbols::Type->Float
+                );
+                $self->move();
+                $x;
+            }
+            when ( Lexer::Tag->TRUE . "" ) {
                 $x = Inter::Constant->True;
                 $self->move();
                 $x;
             }
-            when ( Lexer::Tag->FALSE ) {
+            when ( Lexer::Tag->FALSE . "" ) {
                 $x = Inter::Constant->False;
                 $self->move();
                 $x;
             }
-            when ( Lexer::Tag->ID ) {
+            when ( Lexer::Tag->ID . "" ) {
                 my $s  = $self->look->to_string;
                 my $id = $self->top->get( $self->look );
                 $self->error( $self->look->to_string . " undeclared" )
@@ -391,7 +404,7 @@ class Parser::Parser {
         $type = $type->of;
         $w    = Inter::Constant->new( int => $type->width );
         $t1   = Inter::Arith->new(
-            op    => Lexer::Token( ord('*') ),
+            op    => Lexer::Token->new( tag => ord('*') ),
             expr1 => $i,
             expr2 => $w
         );
@@ -403,12 +416,12 @@ class Parser::Parser {
             $type = $type->of;
             $w    = Inter::Constant->new( int => $type->width );
             $t1   = Inter::Arith->new(
-                op    => Lexer::Token->new( ord('*') ),
+                op    => Lexer::Token->new( tag => ord('*') ),
                 expr1 => $i,
                 expr2 => $w
             );
             $t2 = Inter::Arith->new(
-                op    => Lexer::Token->new( ord('+') ),
+                op    => Lexer::Token->new( tag => ord('+') ),
                 expr1 => $loc,
                 expr2 => $t1
             );
