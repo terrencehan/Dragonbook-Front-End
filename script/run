@@ -1,0 +1,16 @@
+#!/usr/bin/env perl
+use 5.010;
+use lib '../lib';
+use File::Slurp;
+use Parser::Parser;
+unless (@ARGV) {
+    say "Usage: ./run <src_file>";
+    exit;
+}
+$src = read_file $ARGV[0];
+close STDIN;
+open STDIN, "<", \$src;
+
+$parser = Parser::Parser->new;
+$parser->run;
+$parser->program;
